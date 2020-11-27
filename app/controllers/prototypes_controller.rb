@@ -1,6 +1,7 @@
 class PrototypesController < ApplicationController
-  before_action :move_to_index, except: [:index, :show, :new, :create]
   before_action :set_prototype, only: [:edit, :show]
+  before_action :authenticate_user!, except: [:index, :show]
+  before_action :move_to_index, only: [:edit, :update, :destroy]
   
   def index
     @prototypes = Prototype.includes(:user).order("created_at DESC")
@@ -11,7 +12,7 @@ class PrototypesController < ApplicationController
   end
 
   def create
-    @prototype = Prototype.create(prototype_params)
+    @prototype = Prototype.new(prototype_params)
     if @prototype.save
       redirect_to root_path 
     else
@@ -46,20 +47,16 @@ class PrototypesController < ApplicationController
   end
 
   private
-
-  def move_to_index
-    unless user_signed_in? && current_user.id == @prototype
-      redirect_to action: :index
-    end
-  end
-
   def prototype_params
     params.require(:prototype).permit(:image, :title, :catch_copy, :concept).merge(user_id: current_user.id)
   end
 
-  #パラメータで送信されるID値で、Prototypeモデルの特定のオブジェクトを取得するように記述し、それを@prototypeに代入
   def set_prototype
     @prototype = Prototype.find(params[:id])
+  end
+
+  def move_to_index
+    redirect_to root_path unless current_user == @prototype.user
   end
     
 end
