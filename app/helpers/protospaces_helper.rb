@@ -1,0 +1,2 @@
+module ProtospacesHelper
+end
