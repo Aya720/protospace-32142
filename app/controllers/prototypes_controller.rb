@@ -1,5 +1,5 @@
 class PrototypesController < ApplicationController
-  before_action :set_prototype, only: [:edit, :show]
+  before_action :set_prototype, except: [:index, :new, :create]
   before_action :authenticate_user!, except: [:index, :show]
   before_action :move_to_index, only: [:edit, :update, :destroy]
   
@@ -24,12 +24,8 @@ class PrototypesController < ApplicationController
   end
 
   def update
-    #updateアクションにデータを更新する記述
-    prototype = Prototype.find(params[:id])
-    prototype.update(prototype_params)
-    if prototype.valid?
-      prototype.save
-      redirect_to prototype
+    if @prototype.update(prototype_params)
+      redirect_to prototype_path(@prototype)
     else
       render 'edit'
     end
@@ -56,7 +52,8 @@ class PrototypesController < ApplicationController
   end
 
   def move_to_index
-    redirect_to root_path unless current_user == @prototype.user
+    unless user_signed_in? && current_user == @prototype.user
+      redirect_to action: :index
+    end
   end
-    
 end
